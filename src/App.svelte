@@ -1,65 +1,186 @@
 <script>
-  import logo from './assets/svelte.png'
-  import Counter from './lib/Counter.svelte'
+	import { format, currencyFormatted } from "./assets/format";
+	import { NPER, PMT } from "./assets/formulas";
+
+	let purchasePrice = 260000;
+	$: purchasePriceTxt = currencyFormatted(purchasePrice);
+	let downPayment = 52000;
+	$: downPaymentTxt = currencyFormatted(downPayment);
+	let hoa = 0;
+	$: hoaText = currencyFormatted(hoa);
+	let interestRate = 0.065;
+	let pmiRate = 0.0075;
+	let insurance = 2000;
+	let loanLength = 30;
+	let purchasePriceChange = 10000;
+	let downPaymentChange = 3000;
+	$: downPaymentPct = downPayment / purchasePrice;
+	$: yearlyTaxes = purchasePrice * 0.0102;
+	$: monthlyPMI = ((purchasePrice - downPayment) * pmiRate) / 12;
+
+	$: pmiLength =
+		downPaymentPct < 0.2
+			? Math.floor(
+					NPER(
+						interestRate / 12,
+						PMT(interestRate / 12, 360, purchasePrice - downPayment, 0),
+						purchasePrice - downPayment,
+						purchasePrice * -0.8
+					)
+			  )
+			: 0;
+
+	$: monthlyPrincipalInterest =
+		((purchasePrice - downPayment) *
+			((interestRate / 12) * (1 + interestRate / 12) ** loanLength * 12)) /
+		((1 + interestRate / 12) ** loanLength * 12 - 1);
+
+	$: monthly =
+		monthlyPrincipalInterest +
+		hoa +
+		yearlyTaxes / 12 +
+		insurance / 12 +
+		(downPaymentPct < 0.2 ? monthlyPMI : 0);
+
+	function updateValues() {
+		purchasePrice = parseInt(
+			purchasePriceTxt.replace("$", "").replaceAll(",", "")
+		);
+		downPayment = parseInt(downPaymentTxt.replace("$", "").replaceAll(",", ""));
+		hoa = parseInt(hoaText.replace("$", "").replaceAll(",", ""));
+	}
 </script>
 
 <main>
-  <img src={logo} alt="Svelte Logo" />
-  <h1>Hello world!</h1>
+	<p>Purchase Price ({currencyFormatted(downPayment * 5)})</p>
+	<button class="incrementer" on:click={() => (purchasePrice -= purchasePriceChange)}>-</button>
+	<input
+		class="money"
+		use:format={currencyFormatted}
+		bind:value={purchasePriceTxt}
+		on:keyup={updateValues}
+		inputmode="numeric"
+	/>
+	<button class="incrementer" on:click={() => (purchasePrice += purchasePriceChange)}>+</button>
 
-  <Counter />
+	<p>
+		Down Payment ({(downPaymentPct * 100).toFixed(1)}%) ({currencyFormatted(
+			purchasePrice * 0.2
+		)})
+	</p>
+	<button class="incrementer" on:click={() => (downPayment -= downPaymentChange)}>-</button>
+	<input
+		class="money"
+		use:format={currencyFormatted}
+		bind:value={downPaymentTxt}
+		on:keyup={updateValues}
+		inputmode="numeric"
+	/>
+	<button class="incrementer" on:click={() => (downPayment += downPaymentChange)}>+</button>
 
-  <p>
-    Visit <a href="https://svelte.dev">svelte.dev</a> to learn how to build Svelte
-    apps.
-  </p>
+	<div class="sliderHolder">
+		<p>{(interestRate * 100).toFixed(1)}%</p>
+		{#if downPaymentPct < 0.2}
+			<p>{(pmiRate * 100).toFixed(2)}%</p>
+		{/if}
+		<input
+			type="range"
+			class="slider"
+			id=""
+			min="0.02"
+			max="0.12"
+			step="0.001"
+			bind:value={interestRate}
+		/>
 
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme">SvelteKit</a> for
-    the officially supported framework, also powered by Vite!
-  </p>
+		{#if downPaymentPct < 0.2}
+			<input
+				type="range"
+				class="slider"
+				id=""
+				min="0.002"
+				max="0.025"
+				step="0.0005"
+				bind:value={pmiRate}
+			/>
+		{/if}
+	</div>
+
+	<p>HOA</p>
+	<input
+		class="money"
+		use:format={currencyFormatted}
+		bind:value={hoaText}
+		on:keyup={updateValues}
+		inputmode="numeric"
+	/>
+
+	<h1>{currencyFormatted(Math.round(monthly))}</h1>
+	{#if downPaymentPct < 0.2}
+		<h1>
+			{currencyFormatted(Math.round(monthly - monthlyPMI))} after 
+			{pmiLength > 12 ? Math.floor(pmiLength / 12) : ""} {pmiLength > 12 ? "year" : ""}{pmiLength > 24 ? "s" : ""} 
+			{pmiLength % 12} {pmiLength % 12 == 1 ? "month" : "months"}
+			(Total PMI {currencyFormatted( Math.round(monthlyPMI * pmiLength))})
+		</h1>
+	{/if}
 </main>
 
 <style>
-  :root {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  }
+	main {
+		display: block;
+	}
 
-  main {
-    text-align: center;
-    padding: 1em;
-    margin: 0 auto;
-  }
+	.money {
+		padding: 8px;
+		font-size: 20px;
+	}
 
-  img {
-    height: 16rem;
-    width: 16rem;
-  }
+	p {
+		margin-bottom: 0;
+	}
 
-  h1 {
-    color: #ff3e00;
-    text-transform: uppercase;
-    font-size: 4rem;
-    font-weight: 100;
-    line-height: 1.1;
-    margin: 2rem auto;
-    max-width: 14rem;
-  }
+	.slider {
+		-webkit-appearance: none;
+		/* -webkit-transform: rotate(90deg);
+		-moz-transform: rotate(90deg);
+		-o-transform: rotate(90deg);
+		transform: rotate(90deg); */
+		width: 20rem;
+		height: 15px;
+		/* margin-left: 150px; */
+		border-radius: 5px;
+		background: #d3d3d3;
+		outline: none;
+		opacity: 0.7;
+		-webkit-transition: 0.2s;
+		transition: opacity 0.2s;
+	}
 
-  p {
-    max-width: 14rem;
-    margin: 1rem auto;
-    line-height: 1.35;
-  }
+	.slider:hover {
+		opacity: 1;
+	}
 
-  @media (min-width: 480px) {
-    h1 {
-      max-width: none;
-    }
+	.slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 25px;
+		height: 25px;
+		border-radius: 50%;
+		background: #04aa6d;
+		cursor: pointer;
+	}
 
-    p {
-      max-width: none;
-    }
-  }
+	.slider::-moz-range-thumb {
+		width: 25px;
+		height: 25px;
+		border-radius: 50%;
+		background: #04aa6d;
+		cursor: pointer;
+	}
+
+	.incrementer {
+		height: 50px;
+		width: 50px;
+	}
 </style>
