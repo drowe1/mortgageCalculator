@@ -2,18 +2,18 @@
 	import { format, currencyFormatted } from "./assets/format";
 	import { NPER, PMT } from "./assets/formulas";
 
-	let purchasePrice = 260000;
+	let purchasePrice = 290000;
 	$: purchasePriceTxt = currencyFormatted(purchasePrice);
-	let downPayment = 52000;
+	let downPayment = 60750;
 	$: downPaymentTxt = currencyFormatted(downPayment);
 	let hoa = 0;
 	$: hoaText = currencyFormatted(hoa);
-	let interestRate = 0.065;
+	let interestRate = 0.072;
 	let pmiRate = 0.0075;
 	let insurance = 2000;
 	let loanLength = 30;
-	let purchasePriceChange = 10000;
-	let downPaymentChange = 3000;
+	let purchasePriceChange = 5000;
+	let downPaymentChange = 1500;
 	$: downPaymentPct = downPayment / purchasePrice;
 	$: yearlyTaxes = purchasePrice * 0.0102;
 	$: monthlyPMI = ((purchasePrice - downPayment) * pmiRate) / 12;
