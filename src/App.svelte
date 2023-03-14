@@ -4,7 +4,7 @@
 
 	let purchasePrice = 290000;
 	$: purchasePriceTxt = currencyFormatted(purchasePrice);
-	let downPayment = 60750;
+	let downPayment = 60500;
 	$: downPaymentTxt = currencyFormatted(downPayment);
 	let hoa = 0;
 	$: hoaText = currencyFormatted(hoa);
