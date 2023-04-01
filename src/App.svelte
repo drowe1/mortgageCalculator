@@ -15,7 +15,8 @@
 	let purchasePriceChange = 5000;
 	let downPaymentChange = 1500;
 	$: downPaymentPct = downPayment / purchasePrice;
-	$: yearlyTaxes = purchasePrice * 0.0102;
+	let taxRate = 0.0102;
+	$: yearlyTaxes = purchasePrice * taxRate;
 	$: monthlyPMI = ((purchasePrice - downPayment) * pmiRate) / 12;
 
 	$: pmiLength =
@@ -53,36 +54,37 @@
 
 <main>
 	<p>Purchase Price ({currencyFormatted(downPayment * 5)})</p>
-	<button class="incrementer" on:click={() => (purchasePrice -= purchasePriceChange)}>-</button>
-	<input
-		class="money"
-		use:format={currencyFormatted}
-		bind:value={purchasePriceTxt}
-		on:keyup={updateValues}
-		inputmode="numeric"
-	/>
-	<button class="incrementer" on:click={() => (purchasePrice += purchasePriceChange)}>+</button>
+	<div class="incrementerHolder">
+		<button class="incrementer" on:click={() => (purchasePrice -= purchasePriceChange)}>-</button>
+		<input
+			class="money"
+			use:format={currencyFormatted}
+			bind:value={purchasePriceTxt}
+			on:keyup={updateValues}
+			inputmode="numeric"
+		/>
+		<button class="incrementer" on:click={() => (purchasePrice += purchasePriceChange)}>+</button>
+		</div>
 
 	<p>
 		Down Payment ({(downPaymentPct * 100).toFixed(1)}%) ({currencyFormatted(
 			purchasePrice * 0.2
 		)})
 	</p>
-	<button class="incrementer" on:click={() => (downPayment -= downPaymentChange)}>-</button>
-	<input
-		class="money"
-		use:format={currencyFormatted}
-		bind:value={downPaymentTxt}
-		on:keyup={updateValues}
-		inputmode="numeric"
-	/>
-	<button class="incrementer" on:click={() => (downPayment += downPaymentChange)}>+</button>
+	<div class="incrementerHolder">
+		<button class="incrementer" on:click={() => (downPayment -= downPaymentChange)}>-</button>
+		<input
+			class="money"
+			use:format={currencyFormatted}
+			bind:value={downPaymentTxt}
+			on:keyup={updateValues}
+			inputmode="numeric"
+		/>
+		<button class="incrementer" on:click={() => (downPayment += downPaymentChange)}>+</button>
+	</div>
 
+	<p>Interest Rate: {(interestRate * 100).toFixed(1)}%</p>
 	<div class="sliderHolder">
-		<p>{(interestRate * 100).toFixed(1)}%</p>
-		{#if downPaymentPct < 0.2}
-			<p>{(pmiRate * 100).toFixed(2)}%</p>
-		{/if}
 		<input
 			type="range"
 			class="slider"
@@ -92,7 +94,12 @@
 			step="0.001"
 			bind:value={interestRate}
 		/>
+	</div>
 
+	{#if downPaymentPct < 0.2}
+		<p>PMI Rate: {(pmiRate * 100).toFixed(2)}%</p>
+	{/if}
+	<div class="sliderHolder">
 		{#if downPaymentPct < 0.2}
 			<input
 				type="range"
@@ -106,24 +113,48 @@
 		{/if}
 	</div>
 
-	<p>HOA</p>
-	<input
-		class="money"
-		use:format={currencyFormatted}
-		bind:value={hoaText}
-		on:keyup={updateValues}
-		inputmode="numeric"
-	/>
+	<p>Tax Rate: {(taxRate * 100).toFixed(2)}%</p>
+		<div class="sliderHolder">
+		<input
+			type="range"
+			class="slider"
+			id=""
+			min="0.005"
+			max="0.015"
+			step="0.0001"
+			bind:value={taxRate}
+		/>
+	</div>
 
-	<h1>{currencyFormatted(Math.round(monthly))}</h1>
+	<p>HOA</p>
+	<div class="incrementerHolder">
+		<input
+			class="money"
+			use:format={currencyFormatted}
+			bind:value={hoaText}
+			on:keyup={updateValues}
+			inputmode="numeric"
+		/>
+	</div>
+
+	<h1 style="text-align: center;">{currencyFormatted(Math.round(monthly))}</h1>
 	{#if downPaymentPct < 0.2}
 		<h1>
-			{currencyFormatted(Math.round(monthly - monthlyPMI))} after 
+			{currencyFormatted(Math.round(monthly - monthlyPMI))}
+		</h1>
+	{/if}
+
+	<h2 style="margin-top: 0; margin-bottom: 0;">Principal & Interest: {currencyFormatted(Math.round(monthlyPrincipalInterest))}</h2>
+	{#if downPaymentPct < 0.2}
+		<h2 style="margin-top: 0; margin-bottom: 0;">
+			PMI: {currencyFormatted(Math.round(monthlyPMI))} for
 			{pmiLength > 12 ? Math.floor(pmiLength / 12) : ""} {pmiLength > 12 ? "year" : ""}{pmiLength > 24 ? "s" : ""} 
 			{pmiLength % 12} {pmiLength % 12 == 1 ? "month" : "months"}
 			(Total PMI {currencyFormatted( Math.round(monthlyPMI * pmiLength))})
-		</h1>
+		</h2>
 	{/if}
+	<h2 style="margin-top: 0; margin-bottom: 0;">Taxes: {currencyFormatted(Math.round(yearlyTaxes/12))}</h2>
+	<h2 style="margin-top: 0; margin-bottom: 0;">Insurance: {currencyFormatted(Math.round(insurance/12))}</h2>
 </main>
 
 <style>
@@ -134,27 +165,27 @@
 	.money {
 		padding: 8px;
 		font-size: 20px;
+		/* margin: auto; */
+		/* display: block; */
 	}
 
 	p {
 		margin-bottom: 0;
+		text-align: center;
 	}
 
 	.slider {
 		-webkit-appearance: none;
-		/* -webkit-transform: rotate(90deg);
-		-moz-transform: rotate(90deg);
-		-o-transform: rotate(90deg);
-		transform: rotate(90deg); */
 		width: 20rem;
 		height: 15px;
-		/* margin-left: 150px; */
 		border-radius: 5px;
 		background: #d3d3d3;
 		outline: none;
 		opacity: 0.7;
 		-webkit-transition: 0.2s;
 		transition: opacity 0.2s;
+		margin: auto;
+		margin-top: 5px;
 	}
 
 	.slider:hover {
@@ -182,5 +213,19 @@
 	.incrementer {
 		height: 50px;
 		width: 50px;
+	}
+
+	.incrementerHolder {
+		margin: auto;
+		display: flex;
+		align-content: center;
+		justify-content: center;
+	}
+
+	.sliderHolder {
+		margin: auto;
+		display: flex;
+		align-content: center;
+		align-items: center;
 	}
 </style>
