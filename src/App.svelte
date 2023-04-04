@@ -43,6 +43,10 @@
 		insurance / 12 +
 		(downPaymentPct < 0.2 ? monthlyPMI : 0);
 
+	function selectText(event) {
+		event.target.setSelectionRange(1, event.target.value.length);
+	}
+
 	function updateValues() {
 		purchasePrice = parseInt(
 			purchasePriceTxt.replace("$", "").replaceAll(",", "")
@@ -61,6 +65,7 @@
 			use:format={currencyFormatted}
 			bind:value={purchasePriceTxt}
 			on:keyup={updateValues}
+			on:focus={selectText}
 			inputmode="numeric"
 		/>
 		<button class="incrementer" on:click={() => (purchasePrice += purchasePriceChange)}>+</button>
@@ -78,6 +83,7 @@
 			use:format={currencyFormatted}
 			bind:value={downPaymentTxt}
 			on:keyup={updateValues}
+			on:focus={selectText}
 			inputmode="numeric"
 		/>
 		<button class="incrementer" on:click={() => (downPayment += downPaymentChange)}>+</button>
@@ -89,8 +95,8 @@
 			type="range"
 			class="slider"
 			id=""
-			min="0.02"
-			max="0.12"
+			min="0.05"
+			max="0.09"
 			step="0.001"
 			bind:value={interestRate}
 		/>
@@ -133,6 +139,7 @@
 			use:format={currencyFormatted}
 			bind:value={hoaText}
 			on:keyup={updateValues}
+			on:focus={selectText}
 			inputmode="numeric"
 		/>
 	</div>
