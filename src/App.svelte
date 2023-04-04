@@ -54,10 +54,34 @@
 		downPayment = parseInt(downPaymentTxt.replace("$", "").replaceAll(",", ""));
 		hoa = parseInt(hoaText.replace("$", "").replaceAll(",", ""));
 	}
+
+	function monthsToText(months) {
+		let yr = Math.floor(months/12);
+		let mth = months%12;
+		let text = ""
+		if (yr > 0) {
+			if (yr == 1) {
+				text += yr + " year"
+			}else {
+				text += yr + " years"
+			}
+		}
+
+		// todo: this will result in an extra space at the beginning if yr == 0 (even if it doesn't render)
+		if (mth > 0) {
+			if (mth == 1) {
+				text += " " + mth + " month"
+			}else {
+				text += " " + mth + " months"
+			}
+		}
+
+		return text;
+	}
 </script>
 
 <main>
-	<p>Purchase Price ({currencyFormatted(downPayment * 5)})</p>
+	<p>Purchase Price ({currencyFormatted(Math.round(downPayment * 5))})</p>
 	<div class="incrementerHolder">
 		<button class="incrementer" on:click={() => (purchasePrice -= purchasePriceChange)}>-</button>
 		<input
@@ -72,9 +96,8 @@
 		</div>
 
 	<p>
-		Down Payment ({(downPaymentPct * 100).toFixed(1)}%) ({currencyFormatted(
-			purchasePrice * 0.2
-		)})
+		Down Payment ({(downPaymentPct * 100).toFixed(1)}%) 
+		({currencyFormatted(Math.round(purchasePrice * 0.2))})
 	</p>
 	<div class="incrementerHolder">
 		<button class="incrementer" on:click={() => (downPayment -= downPaymentChange)}>-</button>
@@ -94,7 +117,6 @@
 		<input
 			type="range"
 			class="slider"
-			id=""
 			min="0.05"
 			max="0.09"
 			step="0.001"
@@ -110,7 +132,6 @@
 			<input
 				type="range"
 				class="slider"
-				id=""
 				min="0.002"
 				max="0.025"
 				step="0.0005"
@@ -124,7 +145,6 @@
 		<input
 			type="range"
 			class="slider"
-			id=""
 			min="0.005"
 			max="0.015"
 			step="0.0001"
@@ -155,8 +175,7 @@
 	{#if downPaymentPct < 0.2}
 		<h2 style="margin-top: 0; margin-bottom: 0;">
 			PMI: {currencyFormatted(Math.round(monthlyPMI))} for
-			{pmiLength > 12 ? Math.floor(pmiLength / 12) : ""} {pmiLength > 12 ? "year" : ""}{pmiLength > 24 ? "s" : ""} 
-			{pmiLength % 12} {pmiLength % 12 == 1 ? "month" : "months"}
+			{monthsToText(pmiLength)}
 			(Total PMI {currencyFormatted( Math.round(monthlyPMI * pmiLength))})
 		</h2>
 	{/if}
