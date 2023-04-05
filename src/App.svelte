@@ -19,17 +19,7 @@
 	$: yearlyTaxes = purchasePrice * taxRate;
 	$: monthlyPMI = ((purchasePrice - downPayment) * pmiRate) / 12;
 
-	$: pmiLength =
-		downPaymentPct < 0.2
-			? Math.floor(
-					NPER(
-						interestRate / 12,
-						PMT(interestRate / 12, 360, purchasePrice - downPayment, 0),
-						purchasePrice - downPayment,
-						purchasePrice * -0.8
-					)
-			  )
-			: 0;
+	$: pmiLength = pmiDuration(interestRate, purchasePrice, downPayment)
 
 	$: monthlyPrincipalInterest =
 		((purchasePrice - downPayment) *
@@ -77,6 +67,17 @@
 		}
 
 		return text;
+	}
+
+	function pmiDuration(rate, price, downPmt){
+		let pct = price/downPmt;
+		if (pct < 0.2) {
+			return 0;
+		}
+
+		let pmt = PMT(rate/12, 360, price - downPmt, 0);
+		let pers = NPER(rate/12, pmt, price - downPmt, price * -0.8)
+		return Math.round(pers);
 	}
 </script>
 
