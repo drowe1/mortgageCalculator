@@ -77,7 +77,7 @@
 
 		let pmt = PMT(rate/12, 360, price - downPmt, 0);
 		let pers = NPER(rate/12, pmt, price - downPmt, price * -0.8)
-		return Math.round(pers);
+		return Math.ceil(pers); // Is this how they do it in real life?
 	}
 </script>
 
