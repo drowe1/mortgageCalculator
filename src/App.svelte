@@ -33,6 +33,8 @@
 		insurance / 12 +
 		(downPaymentPct < 0.2 ? monthlyPMI : 0);
 
+	$: valid = purchasePrice >= downPayment;
+
 	function selectText(event) {
 		event.target.setSelectionRange(1, event.target.value.length);
 	}
@@ -92,6 +94,7 @@
 			on:keyup={updateValues}
 			on:focus={selectText}
 			inputmode="numeric"
+			maxlength="12"
 		/>
 		<button class="incrementer" on:click={() => (purchasePrice += purchasePriceChange)}>+</button>
 		</div>
@@ -109,6 +112,7 @@
 			on:keyup={updateValues}
 			on:focus={selectText}
 			inputmode="numeric"
+			maxlength="12"
 		/>
 		<button class="incrementer" on:click={() => (downPayment += downPaymentChange)}>+</button>
 	</div>
@@ -162,26 +166,31 @@
 			on:keyup={updateValues}
 			on:focus={selectText}
 			inputmode="numeric"
+			maxlength="12"
 		/>
 	</div>
 
-	<h1 style="text-align: center;">{currencyFormatted(Math.round(monthly))}</h1>
-	{#if downPaymentPct < 0.2}
-		<h1>
-			{currencyFormatted(Math.round(monthly - monthlyPMI))}
-		</h1>
-	{/if}
+	{#if valid}
+		<h1 style="text-align: center;">{currencyFormatted(Math.round(monthly))}</h1>
+		{#if downPaymentPct < 0.2}
+			<h1>
+				{currencyFormatted(Math.round(monthly - monthlyPMI))}
+			</h1>
+		{/if}
 
-	<h2 style="margin-top: 0; margin-bottom: 0;">Principal & Interest: {currencyFormatted(Math.round(monthlyPrincipalInterest))}</h2>
-	{#if downPaymentPct < 0.2}
-		<h2 style="margin-top: 0; margin-bottom: 0;">
-			PMI: {currencyFormatted(Math.round(monthlyPMI))} for
-			{monthsToText(pmiLength)}
-			(Total PMI {currencyFormatted( Math.round(monthlyPMI * pmiLength))})
-		</h2>
+		<h2 style="margin-top: 0; margin-bottom: 0;">Principal & Interest: {currencyFormatted(Math.round(monthlyPrincipalInterest))}</h2>
+		{#if downPaymentPct < 0.2}
+			<h2 style="margin-top: 0; margin-bottom: 0;">
+				PMI: {currencyFormatted(Math.round(monthlyPMI))} for
+				{monthsToText(pmiLength)}
+				(Total PMI {currencyFormatted( Math.round(monthlyPMI * pmiLength))})
+			</h2>
+		{/if}
+		<h2 style="margin-top: 0; margin-bottom: 0;">Taxes: {currencyFormatted(Math.round(yearlyTaxes/12))}</h2>
+		<h2 style="margin-top: 0; margin-bottom: 0;">Insurance: {currencyFormatted(Math.round(insurance/12))}</h2>
+	{:else}
+		<p style="color: red;">Down Payment cannot be greater than purchase price</p>
 	{/if}
-	<h2 style="margin-top: 0; margin-bottom: 0;">Taxes: {currencyFormatted(Math.round(yearlyTaxes/12))}</h2>
-	<h2 style="margin-top: 0; margin-bottom: 0;">Insurance: {currencyFormatted(Math.round(insurance/12))}</h2>
 </main>
 
 <style>
