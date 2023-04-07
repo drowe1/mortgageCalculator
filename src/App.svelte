@@ -2,7 +2,7 @@
 	import { format, currencyFormatted } from "./assets/format";
 	import { NPER, PMT } from "./assets/formulas";
 
-	let purchasePrice = 290000;
+	let purchasePrice = 275000;
 	$: purchasePriceTxt = currencyFormatted(purchasePrice);
 	let downPayment = 60500;
 	$: downPaymentTxt = currencyFormatted(downPayment);
@@ -15,7 +15,7 @@
 	let purchasePriceChange = 5000;
 	let downPaymentChange = 1500;
 	$: downPaymentPct = downPayment / purchasePrice;
-	let taxRate = 0.0102;
+	let taxRate = 0.014;
 	$: yearlyTaxes = purchasePrice * taxRate;
 	$: monthlyPMI = ((purchasePrice - downPayment) * pmiRate) / 12;
 
@@ -150,8 +150,8 @@
 		<input
 			type="range"
 			class="slider"
-			min="0.005"
-			max="0.015"
+			min="0.0075"
+			max="0.020"
 			step="0.0001"
 			bind:value={taxRate}
 		/>
@@ -189,7 +189,7 @@
 		<h2 style="margin-top: 0; margin-bottom: 0;">Taxes: {currencyFormatted(Math.round(yearlyTaxes/12))}</h2>
 		<h2 style="margin-top: 0; margin-bottom: 0;">Insurance: {currencyFormatted(Math.round(insurance/12))}</h2>
 	{:else}
-		<p style="color: red;">Down Payment cannot be greater than purchase price</p>
+		<p style="color: red;">Down payment cannot be larger than purchase price</p>
 	{/if}
 </main>
 
