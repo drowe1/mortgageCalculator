@@ -1,10 +1,10 @@
 <script>
 	import { format, currencyFormatted } from "./assets/format";
-	import { NPER, PMT } from "./assets/formulas";
+	import { NPER, PMT, PPMT } from "./assets/formulas";
 
-	let purchasePrice = 275000;
+	let purchasePrice = 280000;
 	$: purchasePriceTxt = currencyFormatted(purchasePrice);
-	let downPayment = 60500;
+	let downPayment = 62000;
 	$: downPaymentTxt = currencyFormatted(downPayment);
 	let hoa = 0;
 	$: hoaText = currencyFormatted(hoa);
@@ -34,6 +34,8 @@
 		(downPaymentPct < 0.2 ? monthlyPMI : 0);
 
 	$: valid = purchasePrice >= downPayment;
+
+	$: badMoney = (monthly+PPMT(interestRate/12, 1, 360, purchasePrice-downPayment) + monthly+PPMT(interestRate/12, 60, 360, purchasePrice-downPayment))/2
 
 	function selectText(event) {
 		event.target.setSelectionRange(1, event.target.value.length);
@@ -188,6 +190,7 @@
 		{/if}
 		<h2 style="margin-top: 0; margin-bottom: 0;">Taxes: {currencyFormatted(Math.round(yearlyTaxes/12))}</h2>
 		<h2 style="margin-top: 0; margin-bottom: 0;">Insurance: {currencyFormatted(Math.round(insurance/12))}</h2>
+		<h2 style="margin-top: 0; margin-bottom: 0;">Avg. "Bad Money" over 5 yrs: {currencyFormatted(Math.round(badMoney))}</h2>
 	{:else}
 		<p style="color: red;">Down payment cannot be larger than purchase price</p>
 	{/if}
